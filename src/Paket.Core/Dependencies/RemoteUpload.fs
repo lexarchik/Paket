@@ -45,7 +45,7 @@ let Push maxTrials url apiKey packageFileName =
                 tracefnVerbose "Authorizing using token"
             | None ->
                 tracefnVerbose "No authorization found in config file."
-            let client = Utils.createWebClient(url, authOpt)
+            let client = Utils.createWebClient(url, authOpt, Constants.DefaultWebRequestReadWriteTimeout)
             Utils.addHeader client "X-NuGet-ApiKey" apiKey
 
             client.UploadFileAsMultipart (new Uri(url)) packageFileName

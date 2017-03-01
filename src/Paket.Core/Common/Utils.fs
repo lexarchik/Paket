@@ -452,8 +452,18 @@ let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string)
 
 #else
 
-type System.Net.WebClient with
-    member x.UploadFileAsMultipart (url : Uri) filename = 
+type WebClientWithReadWriteTimeout(timeout:TimeSpan) = 
+    inherit System.Net.WebClient()
+    override x.GetWebRequest(address:Uri) =
+        let webRequest = base.GetWebRequest(address)
+        match webRequest with
+        | :? HttpWebRequest as httpWebRequest ->
+            httpWebRequest.ReadWriteTimeout <- timeout.TotalMilliseconds |> int
+            httpWebRequest :> WebRequest
+        | request -> request
+
+type WebClient with
+   member x.UploadFileAsMultipart (url : Uri) filename = 
         let fileTemplate = 
             "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
         let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
@@ -481,13 +491,14 @@ let internal addHeader (client:WebClient) (headerKey:string) (headerVal:string) 
     client.Headers.Add (headerKey, headerVal)
 #endif
 
-let createWebClient (url,auth:Auth option) =
+let createWebClient (url,auth:Auth option,timeout:TimeSpan) =
 #if USE_HTTP_CLIENT
     let handler =
         new HttpClientHandler(
             UseProxy = true,
             Proxy = getDefaultProxyFor url)
     let client = new HttpClient(handler)
+    client.Timeout <- timeout
     match auth with
     | None -> handler.UseDefaultCredentials <- true
     | Some(Credentials(username, password)) -> 
@@ -508,7 +519,7 @@ let createWebClient (url,auth:Auth option) =
     handler.UseProxy <- true
     client
 #else
-    let client = new WebClient()
+    let client = new WebClientWithReadWriteTimeout(timeout)
     client.Headers.Add("User-Agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
 
@@ -538,6 +549,7 @@ let createWebClient (url,auth:Auth option) =
     client
 #endif
 
+let createWebClientWithDefaultTimeout (url,auth:Auth option) = createWebClient (url, auth, Constants.DefaultWebRequestReadWriteTimeout)
 
 #nowarn "40"
 

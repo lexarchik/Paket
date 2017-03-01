@@ -1,4 +1,4 @@
-module Paket.Constants
+﻿module Paket.Constants
 
 open System
 open System.IO
@@ -87,7 +87,7 @@ let LocalRootForTempData =
         let fallback = Path.GetFullPath ".paket"
         if Logging.verbose then
             Logging.tracefn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead." fallback
-        fallback
+      fallback
     )
 
 let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
@@ -97,9 +97,9 @@ let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 let UserNuGetPackagesFolder = 
     getEnVar GlobalPackagesFolderEnvironmentKey 
     |> Option.map (fun path ->
-        path.Replace (Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+        path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
     ) |> Option.defaultValue(
-        Path.Combine (LocalRootForTempData,".nuget","packages")
+        Path.Combine(LocalRootForTempData,".nuget","packages")
     )
 
 /// The magic unpublished date is 1900-01-01T00:00:00
@@ -116,12 +116,15 @@ let NuGetCacheFolder =
         getEnvDir Environment.SpecialFolder.LocalApplicationData
         |> Option.bind (fun appData ->
             let di = DirectoryInfo (Path.Combine (appData, "Nuget", "Cache"))
-            if not di.Exists then
-                di.Create ()
+        if not di.Exists then
+            di.Create()
             Some di.FullName
     ))|> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
         if Logging.verbose then
             Logging.tracefn "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
-        fallback
+          fallback
     )
+
+/// Default time-out in milliseconds when writing to or reading from a WebRequest stream
+let DefaultWebRequestReadWriteTimeout = TimeSpan.FromMilliseconds(300000.)

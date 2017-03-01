@@ -27,7 +27,7 @@ let private doesNotExistsOrIsNewer (file : FileInfo) latest =
 
 /// Downloads the latest version of the given files to the destination dir
 let private downloadLatestVersionOf files destDir =
-    use client = createWebClient(Constants.GitHubUrl, None)
+    use client = createWebClient(Constants.GitHubUrl, None, Constants.DefaultWebRequestReadWriteTimeout)
 
     trial {
         let latest = "https://github.com/fsprojects/Paket/releases/latest";
