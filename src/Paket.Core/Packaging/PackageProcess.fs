@@ -216,7 +216,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     yield template, p
                 }
             )
-         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version specificVersions projDeps)
+         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version projDeps)
          |> Seq.append remaining
          |> Seq.toList
 
