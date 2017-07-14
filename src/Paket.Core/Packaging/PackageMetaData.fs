@@ -159,7 +159,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) (projDeps) lockFile specificVersions =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.OutputType with
@@ -174,12 +174,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         | _ -> PreReleaseStatus.All
 
     let deps, files = 
-        let interProjectDeps = 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps
-            else 
-                project.GetAllInterProjectDependenciesWithProjectTemplates projDeps
-            |> Seq.toList
+        let interProjectDeps = project.GetAllReferencedProjects (false, projDeps) |> Seq.toList
 
         interProjectDeps
         |> List.filter (fun proj -> proj <> project)
@@ -187,12 +182,17 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             match Map.tryFind p.FileName map with
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
-                let p = 
-                    match ProjectFile.TryLoad p.FileName with
-                    | Some p -> p
-                    | _ -> failwithf "Missing project reference in proj file %s" p.FileName
-                    
-                deps, p :: files) ([], [])
+                match ProjectFile.TryLoad p.FileName with
+                | Some p -> 
+                    if includeReferencedProjects then
+                        match p.FindTemplatesFile() with
+                        | Some t -> 
+                            let templateFile = TemplateFile.Load(t, lockFile, version, specificVersions)
+                            (templateFile,p) :: deps, files
+                        | None -> deps, p :: files
+                    else
+                        deps, p :: files
+                | _ -> failwithf "Missing project reference in proj file %s" p.FileName) ([], [])
     
     // Add the assembly + {.dll, .pdb, .xml, /*/.resources.dll} from this project
     let templateWithOutput =
