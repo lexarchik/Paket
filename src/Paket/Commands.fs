@@ -418,6 +418,11 @@ with
             | Max_Results(_) -> "limit maximum number of results"
             | Max_Results_Legacy(_) -> "[obsolete]"
 
+type InterprojectDependencyType = 
+    | Min_Version
+    | Keep_Major
+    | Fix_Version
+
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
     | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
@@ -451,6 +456,8 @@ type PackArgs =
 
     | [<Unique>] Pin_Project_References
     | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
+    
+    | [<Unique>] InterProject_References of referenceType:InterprojectDependencyType
 
     | [<Unique>] Symbols
     | [<Hidden;Unique;CustomCommandLine("symbols")>] Symbols_Legacy
@@ -496,6 +503,8 @@ with
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
             | Pin_Project_References_Legacy(_) -> "[obsolete]"
+            
+            | InterProject_References(_) -> "set dependencies genereted from project references (default - fix-version (=))"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
             | Symbols_Legacy(_) -> "[obsolete]"

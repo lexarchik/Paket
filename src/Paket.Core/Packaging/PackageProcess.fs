@@ -11,6 +11,11 @@ open Paket.PackageMetaData
 open Chessie.ErrorHandling
 open InstallProcess
 
+type ProjectDependencyType =
+    | Min_Version
+    | Fix_Version
+    | Keep_Major
+
 let private tryGenerateDescription packageId outputType =
     match packageId with
     | Some id when notNullOrEmpty id ->

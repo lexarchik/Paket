@@ -121,7 +121,6 @@ type PackageFilter =
         | PackageName name -> name.ToString()
         | PackageFilter filter -> filter
 
-
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFoundInDir of DirectoryInfo

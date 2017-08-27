@@ -10,6 +10,7 @@ open Paket.Commands
 
 open Argu
 open PackageSources
+open PackageProcess
 open Paket.Domain
 
 let sw = Stopwatch.StartNew()
@@ -472,6 +473,11 @@ let pack (results : ParseResults<_>) =
         (results.Contains <@ PackArgs.Pin_Project_References @>,
          results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
         |> legacyBool results (ReplaceArgument("--pin-project-references", "pin-project-references"))
+    let projectDependenciesType =
+        match results.TryGetResult <@ PackArgs.InterProject_References @> with
+        | InterprojectDependencyType.Keep_Major -> ProjectDependencyType.Keep_Major 
+        | InterprojectDependencyType.Fix_Version -> ProjectDependencyType.Fix_Version
+        | _ -> ProjectDependencyType.Min_Version
     let symbols =
         (results.Contains <@ PackArgs.Symbols @>,
          results.Contains <@ PackArgs.Symbols_Legacy @>)
@@ -487,6 +493,7 @@ let pack (results : ParseResults<_>) =
 
     Dependencies.Locate()
                 .Pack(outputPath,
+                      projectDependenciesType,
                       ?buildConfig = buildConfig,
                       ?buildPlatform = buildPlatform,
                       ?version = version,

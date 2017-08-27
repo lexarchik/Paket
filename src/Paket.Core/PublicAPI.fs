@@ -649,13 +649,14 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
+    member this.Pack(outputPath, projectDependenciesType, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let specificVersions = defaultArg specificVersions Seq.empty
         let workingDir = defaultArg workingDir (dependenciesFile.FileName |> Path.GetDirectoryName)
         let lockDependencies = defaultArg lockDependencies false
         let minimumFromLockFile = defaultArg minimumFromLockFile false
         let pinProjectReferences = defaultArg pinProjectReferences false
+        let projectDependenciesType = projectDependenciesType
         let symbols = defaultArg symbols false
         let includeReferencedProjects = defaultArg includeReferencedProjects false
         let projectUrl = defaultArg (Some(projectUrl)) None
