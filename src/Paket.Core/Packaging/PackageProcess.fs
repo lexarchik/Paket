@@ -174,7 +174,8 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             let merged = lazy (merge buildConfig buildPlatform version specificVersions projectFile templateFile')
             let willBePacked = 
                 match templateFile with
-                | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath templateFile'.FileName)
+                | Some file -> 
+                    StringComparer.OrdinalIgnoreCase.Equals(normalizePath (Path.GetFullPath file), normalizePath (Path.GetFullPath templateFile'.FileName))
                 | None -> true
             
             Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile,willBePacked))
